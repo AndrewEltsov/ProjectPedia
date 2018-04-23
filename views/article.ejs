@@ -1,0 +1,8 @@
+<% layout('layout/page') -%>
+<% block('title', "Энциклопедия") -%>
+
+<div class="display-4">
+   <%= name %>
+</div>
+<hr>
+  <%-partial('../articles/'+uid)%>

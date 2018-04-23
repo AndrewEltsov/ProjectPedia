@@ -1,0 +1,56 @@
+<% layout('layout/page') -%>
+<% block('title', "Энциклопедия") -%>
+
+<br>
+<form style="float: right; width: 232px;" name="search-form">
+    <div class="form-group">
+        <input type="text" name="searchtext" class="form-control" id="usr" placeholder="Поиск"  style="float: left; width: 180px;">
+        <button type="submit" class="btn" style="float: right;"><i class="fa fa-search"></i></button>
+    </div>  
+</form>
+<h2>Список пользователей</h2>
+<hr>
+<ul class="list-group">
+        <% var i = 0; %>
+        <% arr.forEach(element => {%>
+            <li class="list-group-item" onmouseover="showCommands(<%=i%>)" onmouseout="hideCommands(<%=i%>)">
+                <p style="float: left;">
+                     <%=element.username%> 
+                </p> 
+                <div class="btn-group btn-group-sm" style="float: right; visibility: hidden;" id="command-panel<%=i%>">
+                    <button type="button" class="btn" onclick="editArticle('<%=element.path%>')"><i class="fa fa-pencil-square-o"></i></button>
+                    <button type="button" class="btn btn-danger" onclick="removeArticle('<%=element.name%>')"><i class="fa fa-times-circle"></i></button>
+                </div>              
+            </li>
+            <%i++;%>
+        <% }) %>   
+</ul>
+
+<script>
+    function showCommands(n)
+    {
+        document.getElementById("command-panel"+n).style.visibility = 'visible';
+    }
+
+    function hideCommands(n)
+    {
+        document.getElementById("command-panel"+n).style.visibility = 'hidden';
+    }   
+
+    $(document.forms['search-form']).on('submit', function() {
+        var form = $(this);
+        $.ajax({
+            url: "/search/users",
+            method: "POST",
+            data: form.serialize(),
+            success: function (result) {
+                $("body").html(result);
+            },
+            error: function(res){
+                alert('get-error');
+                alert(res);
+            }
+          });
+          return false; 
+    });
+</script>

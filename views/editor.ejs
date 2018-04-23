@@ -1,0 +1,123 @@
+<% layout('layout/page') -%>
+<% block('title', "Энциклопедия") -%>
+
+<br>
+
+<form class="form-horizontal" name="editor-form">
+    <div class="form-group">
+        <div class="col-lg-10">
+            <label for="article-head">Заголовок</label>     
+            <input type="text" class="form-control" id="article-head" name="head" value="<%=name %>" <%=mode%>>
+        </div>
+	</div>
+	
+    <div class="form-group">
+        <div class="col-lg-10">
+            <label for="article-text">Текст</label>
+			<textarea style="display:none;" class="form-control" rows="20"  id="article-text" name="text" required >
+			</textarea>
+			<iframe onload="iFrameOn()" srcdoc="<%=doc%>" height='300' class="form-control" name="richTextField" id="richTextField" >
+			</iframe>
+        </div>
+	</div>
+
+	<div class="form-group">
+        <div class="btn-group">
+			<button type="button" class="btn btn-light" title="Жирный текст" onClick="iBold()"><i class="fa fa-bold"></i></button> 
+			<button type="button" class="btn btn-light" title="Подчеркнутый текст" onClick="iUnderline()"><i class="fa fa-underline"></i></button> 
+			<button type="button" class="btn btn-light" title="Курсив" onClick="iItalic()"><i class="fa fa-italic"></i></button> 
+			<button type="button" class="btn btn-light" title="Размер шрифта" onClick="iFontSize()"><i class="fa fa-header"></i></button> 
+			<!-- <button onClick="iForeColor()" value="Text Color"></button>  -->
+			<!-- <button onClick="iHorizontalRule()" value="HR"></button>  -->
+			<button type="button" class="btn btn-light" title="Ненумерованный список" onClick="iUnorderedList()"><i class="fa fa-list-ul"></i></button> 
+			<button type="button" class="btn btn-light" title="Нумерованный список" onClick="iOrderedList()"><i class="fa fa-list-ol"></i></button> 
+			<button type="button" class="btn btn-light" title="Ссылка" onClick="iLink()"><i class="fa fa-link"></i></button> 
+			<button type="button" class="btn btn-light" title="Удалить ссылку" onClick="iUnLink()"><i class="fa fa-unlink"></i></button> 
+			<button type="button" class="btn btn-light" title="Добавить изображение" onClick="iImage()"><i class="fa fa-file-image-o"></i></button> 
+		  </div>
+    </div>
+	
+    <div class="form-group">
+		<div class="col-lg-offset-2 col-lg-10">
+            <button type="submit" class="btn btn-success" data-loading-text="Отправляю...">Готово</button>
+            <button type="button" onClick="cancel()" class="btn btn-danger">Отмена</button>
+        </div>
+    </div>
+</form>
+
+<script>
+$(document.forms['editor-form']).on('submit', function() {
+		var form = $(document.forms['editor-form']);
+		document.forms['editor-form'].elements["text"].value = window.frames['richTextField'].document.body.innerHTML;
+
+        $.ajax({
+          url: "/editor",
+          method: "POST",
+          data: form.serialize(),
+          complete: function() {
+            $(":submit", form).button("reset");
+          },
+          statusCode: {
+            200: function() {
+			  form.html("Статья успешно добавлена в каталог").addClass('alert-success');
+              setTimeout(function () {
+				window.location.href = "/pedia";
+              }, 2000);
+            },         
+            403: function(jqXHR) {
+              var error = JSON.parse(jqXHR.responseText);
+              $('.error', form).html(error.message);
+            }
+          }
+		});
+        return false;
+	  });
+
+	function iFrameOn(){
+		richTextField.document.designMode = 'On';
+	}
+	function iBold(){
+		richTextField.document.execCommand('bold',false,null); 
+	}
+	function iUnderline(){
+		richTextField.document.execCommand('underline',false,null);
+	}
+	function iItalic(){
+		richTextField.document.execCommand('italic',false,null); 
+	}
+	function iFontSize(){
+		var size = prompt('Enter a size 1 - 7', '');
+		richTextField.document.execCommand('FontSize',false,size);
+	}
+	function iForeColor(){
+		var color = prompt('Define a basic color or apply a hexadecimal color code for advanced colors:', '');
+		richTextField.document.execCommand('ForeColor',false,color);
+	}
+	function iHorizontalRule(){
+		richTextField.document.execCommand('inserthorizontalrule',false,null);
+	}
+	function iUnorderedList(){
+		richTextField.document.execCommand("InsertOrderedList", false,"newOL");
+	}
+	function iOrderedList(){
+		richTextField.document.execCommand("InsertUnorderedList", false,"newUL");
+	}
+	function iLink(){
+		var linkURL = prompt("Enter the URL for this link:", "http://"); 
+		richTextField.document.execCommand("CreateLink", false, linkURL);
+	}
+	function iUnLink(){
+		richTextField.document.execCommand("Unlink", false, null);
+	}
+	function iImage(){
+		var imgSrc = prompt('Enter image location', '');
+		if(imgSrc != null){
+			richTextField.document.execCommand('insertimage', false, imgSrc); 
+		}
+	}
+
+	function cancel(){
+		window.location.href = "/pedia";
+	}
+    
+</script>
