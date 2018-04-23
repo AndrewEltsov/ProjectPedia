@@ -22,7 +22,7 @@ module.exports = function(app){
 
   app.get('/users', require('./users').get);
 
-  app.post('/search/articles', require('./edit').post); 
-  app.post('/search/users', require('./edit').post);
+  app.post('/search/articles', require('./searchArticles').post); 
+  app.post('/search/users', require('./searchUsers').post);
     
 }
