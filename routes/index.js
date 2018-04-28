@@ -24,5 +24,7 @@ module.exports = function(app){
 
   app.post('/search/articles', require('./searchArticles').post); 
   app.post('/search/users', require('./searchUsers').post);
+
+  app.post('/sort', require('./sort').post);
     
 }

@@ -9,27 +9,31 @@ exports.get = function(req, res) {
     var fs = require('fs');
     var head = req.body.head;
     var text = req.body.text;
-    var path = '/articles/'+makePath()+'.ejs';
-
+    var path;
+    
     Article.findOne({name: head}, function(err, article){
+
       if (!(article)) {
+        path = '/articles/'+makePath()+'.ejs';
         User.findById(req.session.user, 'username', function (err, user) {
           var newArticle = new Article({name: head, author: user.username, path: path});
           newArticle.save(function(err){
             if (err) throw err;
           });  
         });
+      } else {
+        path = article.path;       
       }
-    });
-    fs.open('.'+path, 'w', function (err, fd) {
-      if (err) throw err;
-      fs.write(fd, text, function(err, written, string){
+      fs.open('.'+path, 'w', function (err, fd) {
         if (err) throw err;
-        fs.close(fd, function (err) {
+        fs.write(fd, text, function(err, written, string){
           if (err) throw err;
-          res.send({});
+          fs.close(fd, function (err) {
+            if (err) throw err;
+            res.send({});
+          })
         })
-      })
+      });
     });
 };
 

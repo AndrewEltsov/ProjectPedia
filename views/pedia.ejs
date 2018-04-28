@@ -10,24 +10,44 @@
         <button type="submit" class="btn" style="float: right;"><i class="fa fa-search"></i></button>
     </div>  
 </form>
+
+<div class="dropdown" style="float: right;">
+    <button type="button" class="btn" data-toggle="dropdown">
+      Сортировать
+      <i class="fa fa-sort"></i>
+    </button>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#" id="alpha-asc"><i class="fa fa-sort-alpha-asc"></i> Заголовок(по возрастанию)</a>
+      <a class="dropdown-item" href="#" id="alpha-desc"><i class="fa fa-sort-alpha-desc"></i> Заголовок(по убыванию)</a>
+      <a class="dropdown-item" href="#" id="date-asc"><i class="fa fa-sort-numeric-asc"></i> Дата создания(по возрастанию)</a>
+      <a class="dropdown-item" href="#" id="date-desc"><i class="fa fa-sort-numeric-desc"></i> Дата создания(по убыванию)</a>
+    </div>
+  </div>
+
 <h2>Каталог</h2>
 <hr>
+<% if (arr.length != 0) {%>
 <ul class="list-group">
         <% var i = 0; %>
         <% arr.forEach(element => {%>
             <li class="list-group-item" onmouseover="showCommands(<%=i%>)" onmouseout="hideCommands(<%=i%>)">
-                <p style="float: left;">
-                    <a href="<%=element.path%>"</a> <%=element.name%> </a>
-                    by <%=element.author%>  
-                </p> 
                 <div class="btn-group btn-group-sm" style="float: right; visibility: hidden;" id="command-panel<%=i%>">
                     <button type="button" class="btn" onclick="editArticle('<%=element.path%>')"><i class="fa fa-pencil-square-o"></i></button>
                     <button type="button" class="btn btn-danger" onclick="removeArticle('<%=element.name%>')"><i class="fa fa-times-circle"></i></button>
-                </div>              
+                </div> 
+                <p>
+                    <a href="<%=element.path%>"</a> <%=element.name%> </a>
+                    by <%=element.author%>  
+                </p> 
+                 
+                <small><%=element.created%></small>
             </li>
             <%i++;%>
         <% }) %>   
 </ul>
+<%} else {%>
+<p>Нет статей, удовлетворяющих запросу</p>
+<%}%>
 
 <script>
     function showCommands(n)
@@ -47,7 +67,11 @@
                     method: "POST",
                     data: {path: element},
                     success: function (result) {
-                        $("body").html(result);
+                        var html = $.parseHTML(result, true);
+                        html.forEach(function(element){
+                            if(element.nodeName == "SECTION")
+                                $("section").html(element.innerHTML);
+                        });
                     },
                     error: function(res){
                         alert('error');
@@ -80,7 +104,91 @@
             method: "POST",
             data: form.serialize(),
             success: function (result) {
-                $("body").html(result);
+                var html = $.parseHTML(result, true);
+                html.forEach(function(element){
+                    if(element.nodeName == "SECTION")
+                        $("section").html(element.innerHTML);
+                });
+            },
+            error: function(res){
+                alert('error');
+                alert(res);
+            }
+          });
+          return false; 
+    });
+
+    $(document.getElementById("alpha-asc")).on('click', function() {
+        $.ajax({
+            url: "/sort",
+            method: "POST",
+            data: {sortby: "name", order: ""},
+            success: function (result) {
+                var html = $.parseHTML(result, true);
+                html.forEach(function(element){
+                    if(element.nodeName == "SECTION")
+                        $("section").html(element.innerHTML);
+                });
+            },
+            error: function(res){
+                alert('error');
+                alert(res);
+            }
+          });
+          return false; 
+    });
+
+    $(document.getElementById("alpha-desc")).on('click', function() {
+        $.ajax({
+            url: "/sort",
+            method: "POST",
+            data: {sortby: "name", order: "-"},
+            success: function (result) {
+                var html = $.parseHTML(result, true);
+                html.forEach(function(element){
+                    if(element.nodeName == "SECTION")
+                        $("section").html(element.innerHTML);
+                });
+            },
+            error: function(res){
+                alert('error');
+                alert(res);
+            }
+          });
+          return false; 
+    });
+
+    $(document.getElementById("date-asc")).on('click', function() {
+        $.ajax({
+            url: "/sort",
+            method: "POST",
+            data: {sortby: "created", order: ""},
+            success: function (result) {
+                var html = $.parseHTML(result, true);
+                html.forEach(function(element){
+                    if(element.nodeName == "SECTION")
+                        $("section").html(element.innerHTML);
+                });
+            },
+            error: function(res){
+                alert('error');
+                alert(res);
+            }
+          });
+          return false; 
+    });
+
+    $(document.getElementById("date-desc")).on('click', function() {
+        $.ajax({
+            url: "/sort",
+            method: "POST",
+            data: {sortby: "created", order: "-"},
+            success: function (result) {
+                var html = $.parseHTML(result, true);
+                html.forEach(function(element){
+                    if(element.nodeName == "SECTION")
+                        $("section").html(element.innerHTML);
+                });
             },
             error: function(res){
                 alert('error');
