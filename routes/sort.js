@@ -13,7 +13,8 @@ exports.post = function(req, res, next) {
         arr.push(doc);
     });
     cursor.on('end', function() {
-        res.render('pedia', {arr: arr}, function(err, html) {
+        var count = Math.ceil(arr.length / 10);
+        res.render('pedia', {arr: arr, pagecount: count, page: 1}, function(err, html) {
             if (err) throw err;
             res.send(html);
         });

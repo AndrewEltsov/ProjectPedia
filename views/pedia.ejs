@@ -4,14 +4,14 @@
 <div class="float-right"><p>Добро пожаловать, <%=user.get('username')%></p></div>
 <br><br>
 
-<form style="float: right; width: 232px;" name="search-form">
+<form style="float: right; width: 228px;" name="search-form">
     <div class="form-group">
         <input type="text" name="searchtext" class="form-control" id="usr" placeholder="Поиск"  style="float: left; width: 180px;">
         <button type="submit" class="btn" style="float: right;"><i class="fa fa-search"></i></button>
     </div>  
 </form>
 
-<div class="dropdown" style="float: right;">
+<div class="dropdown" style="float: right; width: 140px;">
     <button type="button" class="btn" data-toggle="dropdown">
       Сортировать
       <i class="fa fa-sort"></i>
@@ -28,22 +28,30 @@
 <hr>
 <% if (arr.length != 0) {%>
 <ul class="list-group">
-        <% var i = 0; %>
-        <% arr.forEach(element => {%>
-            <li class="list-group-item" onmouseover="showCommands(<%=i%>)" onmouseout="hideCommands(<%=i%>)">
+        <!--<% //var i = 0; %>-->
+        <% for (var i = (page-1)*10; (i < page*10) && (i < arr.length); i++) {%>
+            <li class="list-group-item" <% if(user.get('priviledge') == 'admin' || user.get('username') == arr[i].author ){ %> onmouseover="showCommands(<%=i%>)" onmouseout="hideCommands(<%=i%>)" <% } %>>               
                 <div class="btn-group btn-group-sm" style="float: right; visibility: hidden;" id="command-panel<%=i%>">
-                    <button type="button" class="btn" onclick="editArticle('<%=element.path%>')"><i class="fa fa-pencil-square-o"></i></button>
-                    <button type="button" class="btn btn-danger" onclick="removeArticle('<%=element.name%>')"><i class="fa fa-times-circle"></i></button>
-                </div> 
+                    <button type="button" class="btn" onclick="editArticle('<%=arr[i].path%>')"><i class="fa fa-pencil-square-o"></i></button>
+                    <button type="button" class="btn btn-danger" onclick="removeArticle('<%=arr[i].name%>')"><i class="fa fa-times-circle"></i></button>
+                </div>        
                 <p>
-                    <a href="<%=element.path%>"</a> <%=element.name%> </a>
-                    by <%=element.author%>  
+                    <a href="<%=arr[i].path%>"</a> <%=arr[i].name%> </a>
+                    by <%=arr[i].author%>  
                 </p> 
                  
-                <small><%=element.created%></small>
+                <small><%=arr[i].created%></small>
             </li>
-            <%i++;%>
-        <% }) %>   
+            <!--<%//i++;%>-->
+        <% } %>  
+        <br> 
+</ul>
+<ul class="pagination pagination-sm">
+            <li class="page-item <% if (page == 1) { %> disabled <% } %>"><a class="page-link" onclick="changePage(<%=page%>-1)">Previous</a></li>  
+            <% for (var j = 0; j < pagecount; j++) { %>
+                <li class="page-item <%if (j==page-1) {%> active <% } %>"><a class="page-link" <%if (j != page-1) {%> onclick="changePage(<%=j+1%>)" <% } %> ><%=j+1%></a></li>
+            <% } %>
+            <li class="page-item <% if (page == pagecount) { %> disabled <% } %>" ><a class="page-link" onclick="changePage(<%=page%>+1)">Next</a></li> 
 </ul>
 <%} else {%>
 <p>Нет статей, удовлетворяющих запросу</p>
@@ -62,7 +70,7 @@
 
     function editArticle(element)
     {
-          $.ajax({
+            $.ajax({
                     url: "/edit",
                     method: "POST",
                     data: {path: element},
@@ -77,25 +85,27 @@
                         alert('error');
                         alert(res);
                     }
-            });         
+            });  
     }
    
     function removeArticle(element)
     {
-        $.ajax({
-            url: "/pedia",
-            method: "POST",
-            data: {name: element},
-            success: function (result) {
-                location.reload();
-            },
-            error: function(res){
-                alert('error');
-                alert(res);
-            }
-          });
-          return false;      
-    }
+        if(confirm('Вы действительно хотите удалить статью?')) {        
+            $.ajax({
+                url: "/pedia",
+                method: "POST",
+                data: {name: element},
+                success: function (result) {
+                    location.reload();
+                },
+                error: function(res){
+                    alert('error');
+                    alert(res);
+                }
+            });
+            return false;
+        }
+    }          
 
     $(document.forms['search-form']).on('submit', function() {
         var form = $(this);
@@ -197,6 +207,41 @@
           });
           return false; 
     });
+
+    function changePage(page){
+        var arr = countResults();
+        $.ajax({
+            url: "/changePage",
+            method: "POST",
+            data: {arr: arr, page: page},
+            success: function (result) {
+                var html = $.parseHTML(result, true);
+                html.forEach(function(element){
+                    if(element.nodeName == "SECTION")
+                        $("section").html(element.innerHTML);
+                });
+            },
+            error: function(res){
+                alert('error');
+                alert(res);
+            }
+          }); 
+    }
+
+    function countResults(){
+         var arr = Array();
+         <% arr.forEach(element => { %>
+            var art = {
+                 created: new Date('<%=element.created%>'),
+                _id: '<%=element._id%>',
+                name: '<%=element.name%>',
+                author: '<%=element.author%>',
+                path: '<%=element.path%>',
+                __v: <%=element.__v%> }
+            arr.push(art);
+         <% }); %>
+         return arr;
+    }
 </script>
 
 

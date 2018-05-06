@@ -1,0 +1,77 @@
+<% layout('./layout/page') -%>
+<% block('title', 'Регистрация'); -%>
+
+<h1>Зарегистрируйте новый профиль</h1>
+<br>
+<form class="form-horizontal" name="registration-form">
+    <div class="form-group">
+      <label for="input-username" class="col-lg-2 control-label">Логин</label>
+      <div class="col-lg-10">
+        <input name="username" type="text" class="form-control" id="input-username" placeholder="Логин" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="input-password" class="col-lg-2 control-label">Пароль</label>
+      <div class="col-lg-10">
+        <input name="password" type="password" class="form-control" id="input-password" placeholder="Пароль" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="input-password" class="col-lg-3 control-label">Подтвердить пароль</label>
+      <div class="col-lg-10">
+        <input name="password-repeat" type="password" class="form-control" id="input-password-repeat" placeholder="Повторите пароль" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="col-lg-offset-2 col-lg-10">
+        <button type="submit" class="btn btn-primary" id='submit-button' data-loading-text="Отправляю..." disabled>Подтвердить</button>
+        <span class="help-block error"></span>
+      </div>
+    </div>
+  </form>
+
+<script>
+$(document.forms['registration-form']).on('submit', function() {
+    var form = $(this);
+        $('.error', form).html('');
+        $(":submit", form).button("loading");
+
+        $.ajax({
+          url: "/register",
+          method: "POST",
+          data: form.serialize(),
+          complete: function() {
+            $(":submit", form).button("reset");
+          },
+          success: function () {
+            form.html("Вы вошли на сайт").addClass('alert-success');
+            setTimeout(function () {
+              window.location.href = "/pedia";
+            }, 2000);
+          },
+          error: function(jqXHR){
+            var error = JSON.parse(jqXHR.responseText);
+            $('.error', form).html(error.message);
+          }
+        });
+        return false;
+});
+
+$(document.getElementById("input-password-repeat")).on('input', function() {
+    var pass = document.getElementById("input-password").value;
+    var check = document.getElementById("input-password-repeat").value;
+    var form = $(document.forms['registration-form']);
+
+    if (pass == check) {
+        $('.error', form).html('<br><p class="text-success">Пароли совпадают.</p>');
+        document.getElementById('submit-button').removeAttribute('disabled');
+    } else {
+        $('.error', form).html('<br><p class="text-danger">Пароли не совпадают.</p>');
+        document.getElementById('submit-button').setAttribute('disabled', 'true');
+    }   
+});
+
+</script>

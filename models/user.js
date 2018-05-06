@@ -15,6 +15,10 @@ var schema = new Schema({
     type: String,
     required: true
   },
+  priviledge: {
+    type: String,
+    default: 'user'
+  },
   salt: {
     type: String,
     required: true
@@ -54,14 +58,16 @@ schema.statics.authorize = function(username, password, callback) {
         if (user.checkPassword(password)) {
           callback(null, user);
         } else {
-          callback(new AuthError("Пароль неверен"));
+          callback(new AuthError("Пароль неверен"), user);
         }
       } else {
         var user = new User({username: username, password: password});
-        user.save(function(err) {
-          if (err) return callback(err);
-          callback(null, user);
-        });
+        // user.save(function(err) {
+        //   if (err) return callback(err);
+        //   callback(null, user);
+        // });
+        console.log(user);
+        callback(new AuthError("Пользователь не найден"), user);
       }
     }
   ], callback);
