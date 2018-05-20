@@ -21,14 +21,10 @@ module.exports = function(app){
   app.get('/articles/:uid', checkAuth, require('./article').get);
   app.post('/article', require('./article').post);
 
+  app.get('/user/:uid', checkAuth, require('./userInfo').get);
+  
   app.post('/edit', require('./edit').post);
 
   app.get('/users', checkAuth, require('./users').get);
-
-  app.post('/search/articles', require('./searchArticles').post); 
-  app.post('/search/users', require('./searchUsers').post);
-
-  app.post('/sort', require('./sort').post);
-
-  app.post('/changePage', require('./changePage').post);
+  app.post('/users', checkAuth, require('./users').post);
 }

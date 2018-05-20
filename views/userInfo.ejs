@@ -1,0 +1,42 @@
+<% layout('layout/page') -%>
+<% block('title', "Энциклопедия") -%>
+
+<% var months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];%>
+
+<br>
+<h1>Информация о пользователе</h1>
+<hr>
+
+<p>Имя пользователя: <%=user.username%></p>
+<p>Уровень: <% if (user.priviledge == 'user') {%>
+    пользователь
+<%} else {%>
+    модератор
+<% }%>
+
+<% var dateString = "";
+dateString=user.created.getDate()+" "+months[user.created.getMonth()]+" "+user.created.getFullYear()+" года в ";              
+if (user.created.getHours() > 9) {
+    dateString+=user.created.getHours()+":";
+} else {
+    dateString+='0'+user.created.getHours()+":";
+}
+if (user.created.getMinutes() > 9) {
+    dateString+=user.created.getMinutes()+":";
+} else {
+    dateString+='0'+user.created.getMinutes()+":";
+}
+if (user.created.getSeconds() > 9) {
+    dateString+=user.created.getSeconds();
+} else {
+    dateString+='0'+user.created.getSeconds();
+}%>
+<p>Дата регистрации: <%=dateString%></p>
+
+<p onclick="getUserArticles('<%=user.username%>')"><a  href="javascript:void(0)">Перейти к статьям пользователя</a></p>
+
+<script>
+function getUserArticles(name){
+    window.location.href='/pedia?'+$.param({author: name});
+}
+</script>

@@ -1,5 +1,6 @@
 <% layout('layout/page') -%>
 <% block('title', "Энциклопедия") -%>
+<% var months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];%>
 
 <div class="float-right"><p>Добро пожаловать, <%=user.get('username')%></p></div>
 <br><br>
@@ -28,7 +29,6 @@
 <hr>
 <% if (arr.length != 0) {%>
 <ul class="list-group">
-        <!--<% //var i = 0; %>-->
         <% for (var i = (page-1)*10; (i < page*10) && (i < arr.length); i++) {%>
             <li class="list-group-item" <% if(user.get('priviledge') == 'admin' || user.get('username') == arr[i].author ){ %> onmouseover="showCommands(<%=i%>)" onmouseout="hideCommands(<%=i%>)" <% } %>>               
                 <div class="btn-group btn-group-sm" style="float: right; visibility: hidden;" id="command-panel<%=i%>">
@@ -39,17 +39,41 @@
                     <a href="<%=arr[i].path%>"</a> <%=arr[i].name%> </a>
                     by <%=arr[i].author%>  
                 </p> 
-                 
-                <small><%=arr[i].created%></small>
+                <% var dateString = "";
+                dateString=arr[i].created.getDate()+" "+months[arr[i].created.getMonth()]+" "+arr[i].created.getFullYear()+" года в ";              
+                if (arr[i].created.getHours() > 9) {
+                    dateString+=arr[i].created.getHours()+":";
+                } else {
+                    dateString+='0'+arr[i].created.getHours()+":";
+                }
+                if (arr[i].created.getMinutes() > 9) {
+                    dateString+=arr[i].created.getMinutes()+":";
+                } else {
+                    dateString+='0'+arr[i].created.getMinutes()+":";
+                }
+                if (arr[i].created.getSeconds() > 9) {
+                    dateString+=arr[i].created.getSeconds();
+                } else {
+                    dateString+='0'+arr[i].created.getSeconds();
+                }
+                %>
+                <small><%=dateString%></small>
             </li>
-            <!--<%//i++;%>-->
         <% } %>  
         <br> 
 </ul>
 <ul class="pagination pagination-sm">
             <li class="page-item <% if (page == 1) { %> disabled <% } %>"><a class="page-link" onclick="changePage(<%=page%>-1)">Previous</a></li>  
-            <% for (var j = 0; j < pagecount; j++) { %>
+            <% for (var j = 0; j < pagecount; j++) { 
+                if(pagecount > 6) {
+                    if ((j < 4)&&(j>pagecount-3)) { %>
+                        <li class="page-item <%if (j==page-1) {%> active <% } %>"><a class="page-link" <%if (j != page-1) {%> onclick="changePage(<%=j+1%>)" <% } %> ><%=j+1%></a></li>
+                    <%} else { %>
+                        <li class="page-item">...</li>
+                    <%} 
+                } else { %>
                 <li class="page-item <%if (j==page-1) {%> active <% } %>"><a class="page-link" <%if (j != page-1) {%> onclick="changePage(<%=j+1%>)" <% } %> ><%=j+1%></a></li>
+                <% } %>
             <% } %>
             <li class="page-item <% if (page == pagecount) { %> disabled <% } %>" ><a class="page-link" onclick="changePage(<%=page%>+1)">Next</a></li> 
 </ul>
@@ -107,140 +131,97 @@
         }
     }          
 
-    $(document.forms['search-form']).on('submit', function() {
+    $(document.forms['search-form']).on('submit', function() {        
         var form = $(this);
-        $.ajax({
-            url: "/search/articles",
-            method: "POST",
-            data: form.serialize(),
-            success: function (result) {
-                var html = $.parseHTML(result, true);
-                html.forEach(function(element){
-                    if(element.nodeName == "SECTION")
-                        $("section").html(element.innerHTML);
-                });
-            },
-            error: function(res){
-                alert('error');
-                alert(res);
-            }
-          });
-          return false; 
+        var data = form.serialize();
+        if ('<%=author%>'!='')
+        {
+            data.author = '<%=author%>';
+        }
+        window.location.href='/pedia?'+$.param(data);
     });
 
     $(document.getElementById("alpha-asc")).on('click', function() {
-        $.ajax({
-            url: "/sort",
-            method: "POST",
-            data: {sortby: "name", order: ""},
-            success: function (result) {
-                var html = $.parseHTML(result, true);
-                html.forEach(function(element){
-                    if(element.nodeName == "SECTION")
-                        $("section").html(element.innerHTML);
-                });
-            },
-            error: function(res){
-                alert('error');
-                alert(res);
-            }
-          });
-          return false; 
+        var data = {};
+        if ('<%=search%>'!='')
+        {
+            data.searchtext='<%=search%>';
+        }
+        if ('<%=author%>'!='')
+        {
+            data.author = '<%=author%>';
+        }
+        data.sortby = "name";
+        window.location.href='/pedia?'+$.param(data);
     });
 
     $(document.getElementById("alpha-desc")).on('click', function() {
-        $.ajax({
-            url: "/sort",
-            method: "POST",
-            data: {sortby: "name", order: "-"},
-            success: function (result) {
-                var html = $.parseHTML(result, true);
-                html.forEach(function(element){
-                    if(element.nodeName == "SECTION")
-                        $("section").html(element.innerHTML);
-                });
-            },
-            error: function(res){
-                alert('error');
-                alert(res);
-            }
-          });
-          return false; 
+        var data = {};
+        if ('<%=search%>'!='')
+        {
+            data.searchtext='<%=search%>';
+        }
+        if ('<%=author%>'!='')
+        {
+            data.author = '<%=author%>';
+        }
+        data.sortby = "name";
+        data.order = "-";
+        window.location.href='/pedia?'+$.param(data);
     });
 
     $(document.getElementById("date-asc")).on('click', function() {
-        $.ajax({
-            url: "/sort",
-            method: "POST",
-            data: {sortby: "created", order: ""},
-            success: function (result) {
-                var html = $.parseHTML(result, true);
-                html.forEach(function(element){
-                    if(element.nodeName == "SECTION")
-                        $("section").html(element.innerHTML);
-                });
-            },
-            error: function(res){
-                alert('error');
-                alert(res);
-            }
-          });
-          return false; 
+        var data = {};
+        if ('<%=search%>'!='')
+        {
+            data.searchtext='<%=search%>';
+        }
+        if ('<%=author%>'!='')
+        {
+            data.author = '<%=author%>';
+        }
+        if (JSON.stringify(data) == '{}'){
+            window.location.href='/pedia';
+        } else {
+            window.location.href='/pedia?'+$.param(data);
+        }     
     });
 
     $(document.getElementById("date-desc")).on('click', function() {
-        $.ajax({
-            url: "/sort",
-            method: "POST",
-            data: {sortby: "created", order: "-"},
-            success: function (result) {
-                var html = $.parseHTML(result, true);
-                html.forEach(function(element){
-                    if(element.nodeName == "SECTION")
-                        $("section").html(element.innerHTML);
-                });
-            },
-            error: function(res){
-                alert('error');
-                alert(res);
-            }
-          });
-          return false; 
+        var data = {};
+        if ('<%=search%>'!='')
+        {
+            data.searchtext='<%=search%>';
+        }
+        if ('<%=author%>'!='')
+        {
+            data.author = '<%=author%>';
+        }
+        data.order = "-";
+        window.location.href='/pedia?'+$.param( {order: "-"});
+        window.location.href='/pedia?'+$.param(data);
     });
 
     function changePage(page){
-        var arr = countResults();
-        $.ajax({
-            url: "/changePage",
-            method: "POST",
-            data: {arr: arr, page: page},
-            success: function (result) {
-                var html = $.parseHTML(result, true);
-                html.forEach(function(element){
-                    if(element.nodeName == "SECTION")
-                        $("section").html(element.innerHTML);
-                });
-            },
-            error: function(res){
-                alert('error');
-                alert(res);
-            }
-          }); 
-    }
-
-    function countResults(){
-         var arr = Array();
-         <% arr.forEach(element => { %>
-            var art = {
-                 created: new Date('<%=element.created%>'),
-                _id: '<%=element._id%>',
-                name: '<%=element.name%>',
-                author: '<%=element.author%>',
-                path: '<%=element.path%>',
-                __v: <%=element.__v%> }
-            arr.push(art);
-         <% }); %>
-         return arr;
+        var data = {};
+        if ('<%=search%>'!='')
+        {
+            data.searchtext='<%=search%>';
+        }
+        if ('<%=order%>'!='')
+        {
+            data.order='<%=order%>';
+        }
+        if ('<%=sortby%>'!='created')
+        {
+            data.sortby = '<%=sortby%>';
+        }
+        if ('<%=author%>'!='')
+        {
+            data.author = '<%=author%>';
+        }
+        data.page = page;
+        window.location.href='/pedia?'+$.param(data);
     }
 </script>
 

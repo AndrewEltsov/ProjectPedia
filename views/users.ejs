@@ -13,14 +13,17 @@
 <ul class="list-group">
         <% var i = 0; %>
         <% arr.forEach(element => {%>
-            <li class="list-group-item" onmouseover="showCommands(<%=i%>)" onmouseout="hideCommands(<%=i%>)">
-                <p style="float: left;">
-                     <%=element.username%> 
-                </p> 
-                <div class="btn-group btn-group-sm" style="float: right; visibility: hidden;" id="command-panel<%=i%>">
-                    <button type="button" class="btn" onclick="editArticle('<%=element.path%>')"><i class="fa fa-pencil-square-o"></i></button>
-                    <button type="button" class="btn btn-danger" onclick="removeArticle('<%=element.name%>')"><i class="fa fa-times-circle"></i></button>
-                </div>              
+            <li class="list-group-item" <% if ((user.get('priviledge') == 'admin') && (user.get('username') != element.username)) {%> onmouseover="showCommands(<%=i%>)" onmouseout="hideCommands(<%=i%>)" <%}%>>
+                <p  style="float: left;">
+                     <a href="/user/<%=element.username%>"><%=element.username%></a> 
+                </p>        
+                    <div class="btn-group btn-group-sm" style="float: right; visibility: hidden;" id="command-panel<%=i%>">
+                    <% if (element.priviledge == "user") { %>
+                    <button type="button" class="btn" onclick="upgradeUser('<%=element.username%>')"><i class="fa fa-arrow-up"></i></button>
+                    <%} else { %>
+                    <button type="button" class="btn" onclick="downgradeUser('<%=element.username%>')"><i class="fa fa-arrow-down"></i></button>
+                    <%}%>
+                </div>                      
             </li>
             <%i++;%>
         <% }) %>   
@@ -37,20 +40,39 @@
         document.getElementById("command-panel"+n).style.visibility = 'hidden';
     }   
 
-    $(document.forms['search-form']).on('submit', function() {
-        var form = $(this);
+    function upgradeUser(name) {
         $.ajax({
-            url: "/search/users",
+            url: "/users",
             method: "POST",
-            data: form.serialize(),
+            data: {name: name, priviledge: 'admin'},
             success: function (result) {
-                $("body").html(result);
+                window.location.href="/users";
             },
             error: function(res){
-                alert('get-error');
+                alert('error');
                 alert(res);
             }
           });
-          return false; 
+    }
+
+    function downgradeUser(name) {
+        $.ajax({
+            url: "/users",
+            method: "POST",
+            data: {name: name, priviledge: 'user'},
+            success: function (result) {
+                window.location.href="/users";
+            },
+            error: function(res){
+                alert('error');
+                alert(res);
+            }
+          });
+    }
+
+    $(document.forms['search-form']).on('submit', function() {        
+        var form = $(this);
+        var data = form.serialize();
+        window.location.href='/users?'+$.param(data);
     });
 </script>
